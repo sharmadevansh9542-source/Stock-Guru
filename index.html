@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockGuru - Learn Indian Stock Market</title>
+
+  <!-- 🔐 AUTH CHECK -->
+  <script>
+  document.addEventListener("DOMContentLoaded", async () => {
+
+    const token =
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login first");
+      window.location.href = "login.html";
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/profile", {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      if (!response.ok) {
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+        alert("Session expired. Login again.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const data = await response.json();
+
+      // ✅ Display username
+      if (data.user && data.user.username) {
+        document.getElementById("usernameDisplay").innerText =
+          "Welcome, " + data.user.username;
+      }
+
+    } catch (error) {
+      console.error("Auth error:", error);
+      alert("Cannot connect to server.");
+      window.location.href = "login.html";
+    }
+
+  });
+  </script>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .game-gradient {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0ea5e9 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .game-gradient::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.25) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 30%, rgba(14,165,233,0.2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; }
+
+    /* CTA Buttons */
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s ease;
+      border-radius: inherit;
+    }
+    .cta-btn:hover::after { background: rgba(255,255,255,0.08); }
+    .cta-btn:hover { transform: translateY(-3px); }
+    .cta-btn:active { transform: translateY(0px); }
+
+    /* Start Learning */
+    .btn-learn {
+      background: linear-gradient(135deg, #ffffff, #e0f2fe);
+      color: #0369a1;
+      box-shadow: 0 4px 20px rgba(14,165,233,0.3);
+    }
+    .btn-learn:hover { box-shadow: 0 8px 30px rgba(14,165,233,0.5); }
+
+    /* Start Trading */
+    .btn-trade {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(16,185,129,0.35);
+    }
+    .btn-trade:hover { box-shadow: 0 8px 30px rgba(16,185,129,0.55); }
+
+    /* AI Chatbot */
+    .btn-ai {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(139,92,246,0.4);
+    }
+    .btn-ai:hover { box-shadow: 0 8px 30px rgba(139,92,246,0.6); }
+
+    /* Pulse ring on AI button */
+    .btn-ai-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .btn-ai-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      opacity: 0.35;
+      animation: pulse-ring 2s ease-in-out infinite;
+      z-index: -1;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { transform: scale(1); opacity: 0.35; }
+      50% { transform: scale(1.06); opacity: 0.15; }
+    }
+
+    /* Badge */
+    .ai-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-left: 2px;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+<!-- HEADER -->
+<header class="bg-white shadow sticky top-0 z-50">
+  <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+        <i class="fas fa-chart-line text-white"></i>
+      </div>
+      <span class="text-xl font-bold">StockGuru</span>
+      <span id="usernameDisplay"
+        class="ml-4 text-blue-600 font-semibold"></span>
+    </div>
+
+    <button onclick="logout()"
+      class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+      Logout
+    </button>
+
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="game-gradient text-white py-20 text-center">
+  <div class="hero-content container mx-auto px-6">
+    <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1 text-sm font-medium mb-6 backdrop-blur-sm">
+      <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+      Live Market Simulation Active
+    </div>
+
+    <h1 class="text-5xl font-extrabold mb-4 leading-tight">
+      Learn Indian Stock Market<br>
+      <span class="text-sky-300">the Fun Way!</span>
+    </h1>
+    <p class="text-lg text-blue-100 mb-10 max-w-xl mx-auto">
+      Master the market with virtual trading, real-time charts, and your own AI-powered finance assistant.
+    </p>
+
+    <div class="flex justify-center gap-5 flex-wrap items-center">
+
+      <!-- Start Learning -->
+      <a href="interface.html" class="cta-btn btn-learn">
+        <i class="fas fa-graduation-cap text-lg"></i>
+        Start Learning
+      </a>
+
+      <!-- Start Trading -->
+      <a href="virtualtrading.html" class="cta-btn btn-trade">
+        <i class="fas fa-chart-line text-lg"></i>
+        Start Trading
+      </a>
+
+      <!-- AI Chatbot -->
+      <span class="btn-ai-wrap">
+        <a href="http://localhost:5173" target="_blank" rel="noopener noreferrer" class="cta-btn btn-ai">
+          <i class="fas fa-robot text-lg"></i>
+          StockGuru AI Chatbot
+          <span class="ai-badge">New</span>
+        </a>
+      </span>
+
+    </div>
+
+    <p class="mt-6 text-blue-200 text-sm">
+      <i class="fas fa-shield-alt mr-1"></i>
+      Risk-free virtual trading &bull; Powered by real NSE data
+    </p>
+  </div>
+</section>
+
+<!-- LEARNING PATH -->
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center mb-10">
+      Learning Journey
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="border rounded-lg p-6">
+        <h3 class="text-xl font-semibold mb-2">
+          Stock Market Basics
+        </h3>
+        <p class="mb-4 text-gray-600">
+          Understand fundamentals & terminology
+        </p>
+        <a href="terminology.html"
+          class="block bg-blue-600 text-white py-2 text-center rounded">
+          Continue
+        </a>
+      </div>
+
+      <div class="border rounded-lg p-6">
+        <h3 class="text-xl font-semibold mb-2">
+          Technical Analysis
+        </h3>
+        <p class="mb-4 text-gray-600">
+          Charts, indicators & patterns
+        </p>
+        <a href="technical.html"
+          class="block bg-blue-600 text-white py-2 text-center rounded">
+          Start
+        </a>
+      </div>
+
+      <div class="border rounded-lg p-6">
+        <h3 class="text-xl font-semibold mb-2">
+          Indian Companies
+        </h3>
+        <p class="mb-4 text-gray-600">
+          Sectors & major companies
+        </p>
+        <a href="indiancompanies.html"
+          class="block bg-blue-600 text-white py-2 text-center rounded">
+          Explore
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-blue-600 text-white text-center py-4">
+  CREATED BY DEEPESH CHAUHAN, NIRBHAY PRATAP, DEVANSH SHARMA
+</footer>
+
+<!-- LOGOUT SCRIPT -->
+<script>
+function logout() {
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+</script>
+
+<!-- 🤖 AI Chatbot Floating Widget -->
+<script src="chatbot-widget.js"></script>
+
+</body>
+
+</html>

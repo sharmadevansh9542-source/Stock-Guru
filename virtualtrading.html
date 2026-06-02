@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Guru PRO - Live Trading</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- TradingView Candlestick -->
+    <script src="https://s3.tradingview.com/tv.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+
+        .nav-logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .nav button {
+            margin: 0 4px;
+            padding: 8px 14px;
+            background: #2563eb;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .nav button:hover {
+            background: #1d4ed8;
+        }
+
+        #balance-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #4ade80;
+            font-size: 1rem;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            width: 200px;
+            background: #1e293b;
+            padding: 14px;
+            border-right: 1px solid #334155;
+        }
+
+        .sidebar h3 {
+            margin: 0 0 10px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .watch-item {
+            padding: 10px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .watch-item:hover {
+            background: #334155;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 16px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+
+        .trade-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .trade-row input {
+            padding: 9px 12px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 6px;
+            width: 130px;
+        }
+
+        .btn-buy {
+            background: #16a34a;
+            border: none;
+            color: white;
+            padding: 9px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-buy:hover {
+            background: #15803d;
+        }
+
+        .btn-sell {
+            background: #dc2626;
+            border: none;
+            color: white;
+            padding: 9px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-sell:hover {
+            background: #b91c1c;
+        }
+
+        /* Orders Table */
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.88rem;
+        }
+
+        .orders-table th {
+            background: #334155;
+            padding: 10px 12px;
+            text-align: left;
+            color: #94a3b8;
+        }
+
+        .orders-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .orders-table tr:hover td {
+            background: #1e293b;
+        }
+
+        .badge-buy {
+            background: #16a34a22;
+            color: #4ade80;
+            border: 1px solid #16a34a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .badge-sell {
+            background: #dc262622;
+            color: #f87171;
+            border: 1px solid #dc2626;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .debit {
+            color: #f87171;
+        }
+
+        .credit {
+            color: #4ade80;
+        }
+
+        /* Portfolio cards */
+        .port-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .port-card .symbol {
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .port-card .qty {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .pnl-pos {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .pnl-neg {
+            color: #f87171;
+            font-weight: bold;
+        }
+
+        /* Summary bar */
+        .summary-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .summary-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px 18px;
+            min-width: 140px;
+        }
+
+        .summary-item .label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .summary-item .value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        #toast.show {
+            opacity: 1;
+        }
+
+        /* Stock Trade History */
+        .history-section {
+            margin-top: 16px;
+        }
+
+        .history-section h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+
+        .history-empty {
+            color: #475569;
+            font-size: 0.85rem;
+            padding: 10px 0;
+        }
+
+        .trade-event {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+        }
+
+        .trade-event .te-dot-buy {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            flex-shrink: 0;
+        }
+
+        .trade-event .te-dot-sell {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #f87171;
+            flex-shrink: 0;
+        }
+
+        .trade-event .te-type {
+            font-weight: bold;
+            min-width: 40px;
+        }
+
+        .te-type.buy {
+            color: #4ade80;
+        }
+
+        .te-type.sell {
+            color: #f87171;
+        }
+
+        .trade-event .te-detail {
+            flex: 1;
+            color: #cbd5e1;
+        }
+
+        .trade-event .te-total {
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .trade-event .te-time {
+            color: #475569;
+            font-size: 0.78rem;
+            white-space: nowrap;
+        }
+        /* ── Profit & Loss Section ── */
+        .pnl-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .pnl-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .pnl-stat-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+
+        .pnl-stat-card .pnl-stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pnl-stat-card .pnl-stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .pnl-row {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pnl-row .pnl-sym {
+            font-weight: 700;
+            color: #38bdf8;
+            font-size: 1rem;
+            min-width: 90px;
+        }
+
+        .pnl-row .pnl-detail {
+            flex: 1;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .pnl-row .pnl-amount {
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: right;
+            min-width: 110px;
+        }
+
+        .pnl-bar {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 6px;
+            background: #1e293b;
+            overflow: hidden;
+        }
+
+        .pnl-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .pnl-pct {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* ── Inline AI Prediction Card (Dashboard) ── */
+        #aiPrediction .pred-card {
+            background: linear-gradient(135deg, #0d1b2e 0%, #1a0a3e 100%);
+            border: 1px solid #7c3aed;
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-top: 14px;
+        }
+        .pred-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .pred-title {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .pred-verdict {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .pred-verdict.buy  { background: rgba(22,163,74,0.18); color: #4ade80; border: 1px solid #16a34a; }
+        .pred-verdict.sell { background: rgba(220,38,38,0.18);  color: #f87171; border: 1px solid #dc2626; }
+        .pred-verdict.hold { background: rgba(217,119,6,0.18);  color: #fb923c; border: 1px solid #d97706; }
+        .pred-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .pred-stat {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid #1e3a5f;
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+        .pred-stat .ps-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 4px;
+        }
+        .pred-stat .ps-value {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .pred-forecast-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            margin-top: 14px;
+        }
+        .pred-forecast-table th {
+            padding: 8px 10px;
+            text-align: left;
+            color: #64748b;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #1e293b;
+        }
+        .pred-forecast-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #0f172a;
+        }
+        .pred-forecast-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .pred-mini-chart-wrap {
+            position: relative;
+            height: 130px;
+            margin: 14px 0 4px;
+        }
+        .pred-mini-chart-wrap canvas { border-radius: 8px; }
+        .pred-rsi-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .pred-rsi-track {
+            flex: 1;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .pred-rsi-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+        /* ── AI Prediction Section ── */
+        .ai-hero {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border: 1px solid #4f46e5;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .ai-hero .ai-icon {
+            font-size: 3rem;
+            flex-shrink: 0;
+        }
+
+        .ai-hero .ai-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #a78bfa;
+            margin-bottom: 4px;
+        }
+
+        .ai-hero .ai-sub {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .ai-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .ai-card .ai-card-icon {
+            font-size: 1.6rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .ai-card .ai-card-sym {
+            font-weight: 700;
+            color: #38bdf8;
+            font-size: 0.95rem;
+        }
+
+        .ai-card .ai-card-signal {
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 4px 0;
+        }
+
+        .ai-card .ai-card-detail {
+            font-size: 0.82rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .ai-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-right: 6px;
+        }
+
+        .ai-tag-buy  { background: #16a34a22; color: #4ade80; border: 1px solid #16a34a; }
+        .ai-tag-sell { background: #dc262622; color: #f87171; border: 1px solid #dc2626; }
+        .ai-tag-hold { background: #d9770622; color: #fb923c; border: 1px solid #d97706; }
+
+        .ai-confidence {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .ai-confidence-bar {
+            flex: 1;
+            height: 5px;
+            background: #1e293b;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .ai-confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #4f46e5, #a78bfa);
+        }
+
+        .ai-confidence-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            min-width: 45px;
+            text-align: right;
+        }
+
+        /* ── Stock Guru Prediction Button ── */
+        .btn-sgp {
+            background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899);
+            border: none;
+            color: white;
+            padding: 9px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            box-shadow: 0 0 18px rgba(168,85,247,0.5);
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-sgp::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #a855f7, #ec4899, #7c3aed);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .btn-sgp:hover {
+            box-shadow: 0 0 30px rgba(168,85,247,0.75), 0 0 60px rgba(236,72,153,0.3);
+            transform: translateY(-1px) scale(1.03);
+        }
+        .btn-sgp:hover::before { opacity: 1; }
+        .btn-sgp span { position: relative; z-index: 1; }
+
+        /* ── Prediction Modal Overlay ── */
+        #sgp-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(4,6,13,0.96);
+            flex-direction: column;
+        }
+        #sgp-modal.open { display: flex; }
+
+        .sgp-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: linear-gradient(90deg, #1e1b4b, #0f172a);
+            border-bottom: 2px solid #7c3aed;
+            flex-shrink: 0;
+        }
+        .sgp-modal-title {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sgp-modal-title .pulse-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            background: #a855f7;
+            box-shadow: 0 0 10px #a855f7;
+            animation: pulse-glow 1.6s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; box-shadow: 0 0 10px #a855f7; }
+            50%       { opacity: 0.3; box-shadow: 0 0 4px #a855f7; }
+        }
+        .sgp-close-btn {
+            background: rgba(220,38,38,0.15);
+            border: 1px solid #dc2626;
+            color: #f87171;
+            padding: 7px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .sgp-close-btn:hover {
+            background: #dc2626;
+            color: white;
+            box-shadow: 0 0 14px rgba(220,38,38,0.5);
+        }
+        .sgp-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 20px;
+            background: #070b14;
+            border-bottom: 1px solid #1a253d;
+            flex-shrink: 0;
+            height: 34px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .sgp-status-bar .backend-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sgp-status-bar .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #ef4444;
+            transition: background 0.3s;
+        }
+        .sgp-status-bar .status-dot.online { background: #22c55e; box-shadow: 0 0 7px #22c55e; }
+        #sgp-iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
+        .sgp-offline-msg {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            color: #94a3b8;
+        }
+        .sgp-offline-msg.show { display: flex; }
+        .sgp-offline-icon { font-size: 4rem; }
+        .sgp-offline-title { font-size: 1.3rem; font-weight: 700; color: #e2e8f0; }
+        .sgp-offline-sub {
+            font-size: 0.88rem;
+            color: #64748b;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.7;
+        }
+        .sgp-cmd-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #4ade80;
+            max-width: 520px;
+            width: 100%;
+        }
+        .sgp-cmd-box .cmd-label {
+            color: #64748b;
+            font-size: 0.72rem;
+            margin-bottom: 10px;
+            font-family: 'Segoe UI', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .sgp-cmd-box .cmd-line {
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+        .sgp-cmd-box .cmd-line span { color: #4ade80; }
+        .sgp-retry-btn {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 700;
+            box-shadow: 0 0 18px rgba(168,85,247,0.4);
+            transition: all 0.2s;
+        }
+        .sgp-retry-btn:hover {
+            box-shadow: 0 0 28px rgba(168,85,247,0.65);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nav">
+        <div class="nav-logo">📈 Stock Guru PRO</div>
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+            <button onclick="showSection('dashboard')">📊 Dashboard</button>
+            <button onclick="showSection('orders')">📋 Orders</button>
+            <button onclick="showSection('portfolio')">💼 Portfolio</button>
+            <button onclick="showSection('profitloss')" style="background:#7c3aed;">📊 Profit &amp; Loss</button>
+            <button onclick="showSection('aiprediction')" style="background:#0e7490;">🤖 AI Prediction</button>
+            <button onclick="deposit()">➕ Deposit</button>
+            <button id="sgp-nav-btn" class="btn-sgp" onclick="openSGPModal()"><span>🔮 Stock Guru Prediction</span></button>
+        </div>
+        <div id="balance-box">Balance: <span id="balance">₹1,00,000</span></div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>Watchlist</h3>
+            <div id="watchlist"></div>
+        </div>
+
+        <div class="main">
+            <div id="dashboard">
+                <h2 id="stockTitle">RELIANCE</h2>
+
+                <!-- TradingView Chart -->
+                <div id="tvchart" style="height:400px"></div>
+
+                <!-- Line Chart -->
+                <canvas id="chart" style="width:100%;height:320px;display:block;margin-top:12px;"></canvas>
+
+                <div id="aiPrediction"></div>
+
+                <!-- Per-stock trade history -->
+                <div class="card history-section">
+                    <h3>📜 Trade History — <span id="historyStockName" style="color:#38bdf8">RELIANCE.NS</span></h3>
+                    <div id="stockTradeHistory">
+                        <p class="history-empty">No trades yet for this stock.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="orders" style="display:none">
+                <h2>📋 Order History</h2>
+                <div class="summary-bar">
+                    <div class="summary-item">
+                        <div class="label">Total Orders</div>
+                        <div class="value" id="totalOrders">0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">Total Invested</div>
+                        <div class="value debit" id="totalInvested">₹0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">Total Sold</div>
+                        <div class="value credit" id="totalSold">₹0</div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Stock</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Balance After</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="portfolio" style="display:none">
+                <h2>💼 Portfolio</h2>
+                <div id="portfolioList"></div>
+            </div>
+
+            <!-- ── PROFIT & LOSS SECTION ── -->
+            <div id="profitloss" style="display:none">
+                <div class="pnl-section-header">
+                    <h2>📊 Profit &amp; Loss</h2>
+                    <button onclick="refreshPnL()" style="background:#7c3aed;border:none;color:white;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.85rem;">🔄 Refresh Prices</button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="pnl-summary-grid">
+                    <div class="pnl-stat-card">
+                        <div class="pnl-stat-label">Total Invested</div>
+                        <div class="pnl-stat-value debit" id="pnl-invested">₹0</div>
+                    </div>
+                    <div class="pnl-stat-card">
+                        <div class="pnl-stat-label">Current Value</div>
+                        <div class="pnl-stat-value" id="pnl-current" style="color:#38bdf8">₹0</div>
+                    </div>
+                    <div class="pnl-stat-card">
+                        <div class="pnl-stat-label">Total P&amp;L</div>
+                        <div class="pnl-stat-value" id="pnl-total">₹0</div>
+                    </div>
+                    <div class="pnl-stat-card">
+                        <div class="pnl-stat-label">Realised P&amp;L</div>
+                        <div class="pnl-stat-value" id="pnl-realised">₹0</div>
+                    </div>
+                </div>
+
+                <!-- Per-Stock P&L -->
+                <div id="pnl-holdings"></div>
+            </div>
+
+            <!-- ── AI PREDICTION SECTION ── -->
+            <div id="aiprediction" style="display:none">
+                <div class="ai-hero">
+                    <div class="ai-icon">🤖</div>
+                    <div>
+                        <div class="ai-title">AI Market Intelligence</div>
+                        <div class="ai-sub">Signals generated from price-momentum analysis &amp; trend detection across your watchlist</div>
+                    </div>
+                </div>
+                <div id="ai-signals-list"><p style="color:#94a3b8">Loading AI signals…</p></div>
+            </div>
+
+            <div class="card">
+                <h3>⚡ Place Order — <span id="tradeStockName" style="color:#38bdf8">RELIANCE.NS</span></h3>
+                <div class="trade-row">
+                    <input type="number" id="qty" placeholder="Quantity" min="1">
+                    <button class="btn-buy" onclick="buyStock()">🟢 BUY</button>
+                    <button class="btn-sell" onclick="sellStock()">🔴 SELL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STOCK GURU PREDICTION MODAL ── -->
+    <div id="sgp-modal">
+        <div class="sgp-modal-header">
+            <div class="sgp-modal-title">
+                <span class="pulse-dot"></span>
+                🔮 Stock Guru Prediction — AI-Powered LSTM + Gradient Boost Engine
+            </div>
+            <button class="sgp-close-btn" onclick="closeSGPModal()">✕ Close</button>
+        </div>
+        <div class="sgp-status-bar">
+            <div class="backend-status">
+                <div class="status-dot" id="sgp-status-dot"></div>
+                <span id="sgp-status-text">Checking backend…</span>
+            </div>
+            <span style="color:#334155">|</span>
+            <span>Flask API: <b style="color:#38bdf8">http://localhost:5001</b></span>
+            <span style="color:#334155">|</span>
+            <span>23 Technical Indicators · LSTM + GB Ensemble · Live Yahoo Finance</span>
+        </div>
+        <iframe id="sgp-iframe" src="about:blank" title="Stock Guru Prediction"></iframe>
+        <div class="sgp-offline-msg" id="sgp-offline-msg">
+            <div class="sgp-offline-icon">⚡</div>
+            <div class="sgp-offline-title">Start the Prediction Backend</div>
+            <div class="sgp-offline-sub">
+                The Stock Guru AI Prediction engine requires the Python Flask backend to be running on port <b style="color:#a78bfa">5001</b>.
+                The prediction frontend is loaded but needs the backend for live predictions.
+            </div>
+            <div class="sgp-cmd-box">
+                <div class="cmd-label">📂 Run these commands in a new terminal:</div>
+                <div class="cmd-line"><span>cd</span> "C:\Users\sharm\Desktop\stock guru\prediction-backend"</div>
+                <div class="cmd-line"><span>pip install</span> flask flask-cors numpy pandas yfinance scikit-learn tensorflow</div>
+                <div class="cmd-line"><span>python</span> app.py</div>
+            </div>
+            <button class="sgp-retry-btn" onclick="checkSGPBackend()">🔄 Retry Connection</button>
+        </div>
+    </div>
+
+    <script>
+        let balance = 100000;
+        let portfolio = {};   // { symbol: { qty, avgPrice } }
+        let orders = [];      // detailed order objects
+        let currentStock = "RELIANCE.NS";
+        let currentPrice = 0; // cached from last chart load
+        let chart;
+
+        /* ── TOAST ── */
+        function showToast(msg, color) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.borderColor = color || '#334155';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        /* ── FORMAT ── */
+        function fmt(n) { return '₹' + parseFloat(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+        /* 💹 BASE PRICES (fallback simulation for Indian stocks) */
+        const BASE_PRICES = {
+            'RELIANCE.NS': 2850, 'TCS.NS': 3920, 'INFY.NS': 1760,
+            'HDFCBANK.NS': 1680, 'WIPRO.NS': 480,  'ICICIBANK.NS': 1250,
+            'SBIN.NS': 820,      'BHARTIARTL.NS': 1750, 'LT.NS': 3600,
+            'AXISBANK.NS': 1180
+        };
+        let priceSeeds = {};  // keeps simulated prices drifting realistically
+
+        function simulateStock(symbol) {
+            let base = BASE_PRICES[symbol] || 1000;
+            if (!priceSeeds[symbol]) priceSeeds[symbol] = base;
+            // small random walk each call
+            priceSeeds[symbol] += (Math.random() - 0.49) * base * 0.003;
+            let price = parseFloat(priceSeeds[symbol].toFixed(2));
+            // build a 60-point simulated history
+            let history = [], p = base * 0.95;
+            for (let i = 0; i < 60; i++) {
+                p += (Math.random() - 0.48) * base * 0.004;
+                history.push(parseFloat(p.toFixed(2)));
+            }
+            history.push(price);
+            return { price, history };
+        }
+
+        /* 🔥 LIVE STOCK API (with CORS proxy + simulated fallback) */
+        async function loadStock(symbol) {
+            try {
+                let res = await fetch(
+                    `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+                    { signal: AbortSignal.timeout(5000) }
+                );
+                if (!res.ok) throw new Error('bad response');
+                let data = await res.json();
+                let r = data.chart.result[0];
+                return {
+                    price: parseFloat(r.meta.regularMarketPrice.toFixed(2)),
+                    history: r.indicators.quote[0].close.map(v => v === null ? undefined : parseFloat(v.toFixed(2))).filter(Boolean)
+                };
+            } catch (e) {
+                // Fallback to realistic simulation
+                return simulateStock(symbol);
+            }
+        }
+
+        /* 📊 LINE CHART */
+        async function loadChart(symbol) {
+            let data = await loadStock(symbol);
+            if (chart) chart.destroy();
+            chart = new Chart(document.getElementById("chart"), {
+                type: 'line',
+                data: {
+                    labels: data.history.map((_, i) => i),
+                    datasets: [{ label: symbol, data: data.history, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.08)', pointRadius: 0, tension: 0.3 }]
+                },
+                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+            });
+            currentPrice = data.price; // cache price
+            document.getElementById("stockTitle").innerText = symbol + "  " + fmt(data.price);
+            document.getElementById("tradeStockName").innerText = symbol + "  —  " + fmt(data.price);
+            runAI(data.history);
+        }
+
+        /* 📉 TRADINGVIEW CANDLESTICK */
+        function loadTV(symbol) {
+            document.getElementById("tvchart").innerHTML = "";
+            new TradingView.widget({ container_id: "tvchart", symbol: "NSE:" + symbol.replace(".NS", ""), interval: "5", theme: "dark", style: "1", locale: "en", width: "100%", height: 400 });
+        }
+
+        /* ⭐ WATCHLIST */
+        let watchlist = ["RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS"];
+        function loadWatchlist() {
+            let html = "";
+            watchlist.forEach(s => { html += `<div class="watch-item" onclick="selectStock('${s}')">${s.replace('.NS', '')}</div>`; });
+            document.getElementById("watchlist").innerHTML = html;
+        }
+        function selectStock(s) { currentStock = s; loadChart(s); loadTV(s); updateStockHistory(); }
+
+        /* ⚡ AUTO REFRESH */
+        setInterval(() => { loadChart(currentStock); }, 15000);
+
+        /* 🧠 AI PREDICTION — Rich LSTM-style forecast panel */
+        let miniForecastChart = null;
+        function runAI(history) {
+            const clean = history.filter(v => v != null && !isNaN(v));
+            if (clean.length < 10) {
+                document.getElementById('aiPrediction').innerHTML =
+                    '<div class="card" style="color:#94a3b8;margin-top:10px">⏳ Not enough data for prediction.</div>';
+                return;
+            }
+
+            // ── Compute indicators ──────────────────────────────────
+            const last   = clean[clean.length - 1];
+            const first  = clean[0];
+            const n      = clean.length;
+
+            // RSI (14-period)
+            const period = Math.min(14, n - 1);
+            let gains = 0, lossesSUM = 0;
+            for (let i = n - period; i < n; i++) {
+                const d = clean[i] - clean[i - 1];
+                if (d > 0) gains += d; else lossesSUM += Math.abs(d);
+            }
+            const avgG = gains / period, avgL = lossesSUM / period;
+            const rsi  = avgL === 0 ? 99 : parseFloat((100 - 100 / (1 + avgG / avgL)).toFixed(1));
+
+            // Moving averages
+            const ma5  = clean.slice(-5).reduce((a,b)=>a+b,0) / 5;
+            const ma20 = clean.slice(-Math.min(20,n)).reduce((a,b)=>a+b,0) / Math.min(20,n);
+
+            // Volatility (std-dev last 20)
+            const slice20 = clean.slice(-Math.min(20,n));
+            const mean20  = slice20.reduce((a,b)=>a+b,0) / slice20.length;
+            const variance= slice20.reduce((a,b)=>a+(b-mean20)**2,0) / slice20.length;
+            const stdDev  = Math.sqrt(variance);
+
+            // Trend %
+            const trendPct = ((last - first) / first * 100).toFixed(2);
+
+            // MACD approximation (12 vs 26 EMA)
+            function ema(arr, p) {
+                let k = 2/(p+1), e = arr[0];
+                for (let i=1;i<arr.length;i++) e = arr[i]*k + e*(1-k);
+                return e;
+            }
+            const ema12 = ema(clean.slice(-Math.min(26,n)), 12);
+            const ema26 = ema(clean.slice(-Math.min(26,n)), 26);
+            const macd  = parseFloat((ema12 - ema26).toFixed(2));
+
+            // ── 7-Day Forecast (momentum + mean-reversion model) ────
+            const momentum = (clean.slice(-5).reduce((a,b)=>a+b,0)/5) - (clean.slice(-20,-15).reduce((a,b)=>a+b,0)/5 || last);
+            const drift    = momentum * 0.1;
+            const forecastDays = 7;
+            const forecastPrices = [];
+            let fp = last;
+            for (let i = 0; i < forecastDays; i++) {
+                // small noise + drift + slight mean reversion
+                const noise = (Math.random() - 0.48) * stdDev * 0.5;
+                fp = fp + drift + noise;
+                forecastPrices.push(parseFloat(fp.toFixed(2)));
+            }
+            const targetPrice    = forecastPrices[forecastDays - 1];
+            const upside         = ((targetPrice - last) / last * 100).toFixed(2);
+            const support        = parseFloat((last - stdDev * 1.5).toFixed(2));
+            const resistance     = parseFloat((last + stdDev * 1.5).toFixed(2));
+
+            // ── Signal logic ────────────────────────────────────────
+            let signal, verdictClass, verdictIcon;
+            if (rsi > 70 || (macd < 0 && parseFloat(trendPct) < 0)) {
+                signal = 'SELL'; verdictClass = 'sell'; verdictIcon = '📉';
+            } else if (rsi < 40 || (macd > 0 && parseFloat(trendPct) > 0)) {
+                signal = 'BUY';  verdictClass = 'buy';  verdictIcon = '🚀';
+            } else {
+                signal = 'HOLD'; verdictClass = 'hold'; verdictIcon = '⚖️';
+            }
+
+            // Confidence
+            const confidence = Math.min(94, Math.max(52, Math.round(60 + Math.abs(rsi-50)*0.7 + Math.abs(parseFloat(trendPct))*1.2)));
+
+            // ── Forecast table rows ──────────────────────────────────
+            const today = new Date();
+            const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            let tableRows = '';
+            forecastPrices.forEach((p, i) => {
+                const d   = new Date(today); d.setDate(today.getDate() + i + 1);
+                const pct = ((p - last) / last * 100).toFixed(2);
+                const pos = parseFloat(pct) >= 0;
+                tableRows += `<tr>
+                    <td style="color:#64748b">${dayNames[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}</td>
+                    <td style="font-weight:700">${fmt(p)}</td>
+                    <td style="color:${pos?'#4ade80':'#f87171'};font-weight:600">${pos?'+':''}${pct}%</td>
+                    <td><div style="height:4px;border-radius:2px;background:${pos?'#16a34a':'#dc2626'};width:${Math.min(100,Math.abs(parseFloat(pct))*15)}%"></div></td>
+                </tr>`;
+            });
+
+            // ── RSI colour ───────────────────────────────────────────
+            const rsiColor = rsi > 70 ? '#f87171' : rsi < 30 ? '#4ade80' : '#a78bfa';
+
+            // ── Render HTML ──────────────────────────────────────────
+            document.getElementById('aiPrediction').innerHTML = `
+            <div class="pred-card">
+                <div class="pred-header">
+                    <div style="font-size:0.8rem;color:#64748b">📊 7-Day Price Forecast &nbsp;·&nbsp; RSI <b style="color:${rsiColor}">${rsi}</b> &nbsp;·&nbsp; MACD <b style="color:${macd>=0?'#4ade80':'#f87171'}">${macd>=0?'+':''}${macd}</b></div>
+                    <div class="pred-verdict ${verdictClass}">${verdictIcon} ${signal}</div>
+                </div>
+
+                <!-- Key stats -->
+                <div class="pred-grid">
+                    <div class="pred-stat">
+                        <div class="ps-label">Current Price</div>
+                        <div class="ps-value" style="color:#38bdf8">${fmt(last)}</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="ps-label">7-Day Target</div>
+                        <div class="ps-value" style="color:${parseFloat(upside)>=0?'#4ade80':'#f87171'}">${fmt(targetPrice)}</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="ps-label">Expected Move</div>
+                        <div class="ps-value" style="color:${parseFloat(upside)>=0?'#4ade80':'#f87171'}">${parseFloat(upside)>=0?'+':''}${upside}%</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="ps-label">Confidence</div>
+                        <div class="ps-value" style="color:#a78bfa">${confidence}%</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="ps-label">Support</div>
+                        <div class="ps-value" style="color:#4ade80">${fmt(support)}</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="ps-label">Resistance</div>
+                        <div class="ps-value" style="color:#f87171">${fmt(resistance)}</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="ps-label">RSI (14)</div>
+                        <div class="ps-value" style="color:${rsiColor}">${rsi}</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="ps-label">MACD</div>
+                        <div class="ps-value" style="color:${macd>=0?'#4ade80':'#f87171'}">${macd>=0?'+':''}${macd}</div>
+                    </div>
+                </div>
+
+                <!-- RSI bar -->
+                <div class="pred-rsi-bar-wrap">
+                    <span style="font-size:0.72rem;color:#64748b;min-width:55px">RSI ${rsi}</span>
+                    <div class="pred-rsi-track">
+                        <div class="pred-rsi-fill" style="width:${rsi}%;background:${rsiColor}"></div>
+                    </div>
+                    <span style="font-size:0.72rem;color:#64748b">${rsi<30?'Oversold':rsi>70?'Overbought':'Neutral'}</span>
+                </div>
+
+                <!-- Forecast mini chart -->
+                <div class="pred-mini-chart-wrap">
+                    <canvas id="forecastMiniChart"></canvas>
+                </div>
+
+                <!-- 7-day forecast table -->
+                <table class="pred-forecast-table">
+                    <thead><tr><th>Date</th><th>Forecast Price</th><th>Change</th><th>Momentum</th></tr></thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+
+                <div style="margin-top:12px;font-size:0.72rem;color:#334155;border-top:1px solid #1e293b;padding-top:8px">
+                    ⚠️ Forecast is AI-simulated. Not financial advice. Past performance ≠ future results.
+                </div>
+            </div>`;
+
+            // ── Draw forecast mini chart ─────────────────────────────
+            if (miniForecastChart) { miniForecastChart.destroy(); miniForecastChart = null; }
+            const histSlice = clean.slice(-14);
+            const histLabels = histSlice.map((_, i) => 'H' + (i - histSlice.length + 1));
+            const fcastLabels = forecastPrices.map((_, i) => 'D' + (i + 1));
+            const allLabels = [...histLabels, ...fcastLabels];
+            const histData  = [...histSlice, ...Array(forecastDays).fill(null)];
+            const fcastData = [...Array(histSlice.length - 1).fill(null), histSlice[histSlice.length-1], ...forecastPrices];
+
+            const cvs = document.getElementById('forecastMiniChart');
+            if (cvs) {
+                miniForecastChart = new Chart(cvs, {
+                    type: 'line',
+                    data: {
+                        labels: allLabels,
+                        datasets: [
+                            {
+                                label: 'Historical',
+                                data: histData,
+                                borderColor: '#38bdf8',
+                                backgroundColor: 'rgba(56,189,248,0.06)',
+                                pointRadius: 0,
+                                borderWidth: 2,
+                                tension: 0.3,
+                                spanGaps: false
+                            },
+                            {
+                                label: '7-Day Forecast',
+                                data: fcastData,
+                                borderColor: '#a78bfa',
+                                backgroundColor: 'rgba(167,139,250,0.10)',
+                                borderDash: [5, 4],
+                                pointRadius: 3,
+                                pointBackgroundColor: '#a78bfa',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                spanGaps: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 800 },
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: '#0f172a' } },
+                            y: { ticks: { color: '#475569', font: { size: 10 }, callback: v => '₹'+v.toLocaleString('en-IN') }, grid: { color: '#1e293b' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        /* 💰 BUY */
+        function buyStock() {
+            let qty = parseInt(document.getElementById("qty").value);
+            if (!qty || qty <= 0) { showToast('❌ Enter a valid quantity', '#dc2626'); return; }
+            if (currentPrice <= 0) { showToast('⏳ Price not loaded yet, wait a moment', '#f59e0b'); return; }
+
+            let price = currentPrice;
+            let total = price * qty;
+
+            if (balance < total) { showToast('❌ Insufficient balance! Need ' + fmt(total), '#dc2626'); return; }
+
+            // Debit balance
+            balance -= total;
+
+            // Update portfolio with avg price
+            if (!portfolio[currentStock]) portfolio[currentStock] = { qty: 0, avgPrice: 0 };
+            let p = portfolio[currentStock];
+            p.avgPrice = ((p.avgPrice * p.qty) + (price * qty)) / (p.qty + qty);
+            p.qty += qty;
+
+            // Save order
+            orders.unshift({
+                id: orders.length + 1,
+                type: 'BUY',
+                symbol: currentStock,
+                qty,
+                price,
+                total,
+                balanceAfter: balance,
+                time: new Date().toLocaleString('en-IN')
+            });
+
+            showToast(`✅ Bought ${qty} × ${currentStock.replace('.NS', '')} @ ${fmt(price)} — Debited ${fmt(total)}`, '#16a34a');
+            updateUI();
+        }
+
+        /* 💸 SELL */
+        function sellStock() {
+            let qty = parseInt(document.getElementById("qty").value);
+            if (!qty || qty <= 0) { showToast('❌ Enter a valid quantity', '#dc2626'); return; }
+            if (currentPrice <= 0) { showToast('⏳ Price not loaded yet, wait a moment', '#f59e0b'); return; }
+
+            let held = portfolio[currentStock] ? portfolio[currentStock].qty : 0;
+            if (held < qty) { showToast(`❌ You only hold ${held} shares`, '#dc2626'); return; }
+
+            let price = currentPrice;
+            let total = price * qty;
+
+            let avgBuyPrice = portfolio[currentStock] ? portfolio[currentStock].avgPrice : price;
+
+            // Credit balance
+            balance += total;
+            portfolio[currentStock].qty -= qty;
+            if (portfolio[currentStock].qty === 0) delete portfolio[currentStock];
+
+            // Compute realized P&L for this sell
+            const realizedPnL = (price - avgBuyPrice) * qty;
+            const realizedPct = ((price - avgBuyPrice) / avgBuyPrice * 100).toFixed(2);
+
+            // Save order with avgBuyPrice for accurate P&L
+            orders.unshift({
+                id: orders.length + 1,
+                type: 'SELL',
+                symbol: currentStock,
+                qty,
+                price,
+                total,
+                avgBuyPrice,
+                realizedPnL,
+                balanceAfter: balance,
+                time: new Date().toLocaleString('en-IN')
+            });
+
+            const pnlSign = realizedPnL >= 0 ? '📈 PROFIT' : '📉 LOSS';
+            const pnlColor = realizedPnL >= 0 ? '#4ade80' : '#f87171';
+            showToast(`✅ Sold ${qty} × ${currentStock.replace('.NS', '')} @ ${fmt(price)} | ${pnlSign}: ${realizedPnL>=0?'+':''}${fmt(realizedPnL)} (${realizedPct}%)`, pnlColor);
+            updateUI();
+        }
+
+        /* 📜 PER-STOCK HISTORY PANEL */
+        function updateStockHistory() {
+            const sym = currentStock;
+            document.getElementById('historyStockName').innerText = sym.replace('.NS', '');
+            const trades = orders.filter(o => o.symbol === sym);
+            if (trades.length === 0) {
+                document.getElementById('stockTradeHistory').innerHTML = '<p class="history-empty">No trades yet for this stock.</p>';
+                return;
+            }
+            let html = trades.map(o => {
+                const dotClass = o.type === 'BUY' ? 'te-dot-buy' : 'te-dot-sell';
+                const typeClass = o.type === 'BUY' ? 'buy' : 'sell';
+                const sign = o.type === 'BUY' ? '-' : '+';
+                const amtClass = o.type === 'BUY' ? 'debit' : 'credit';
+                return `<div class="trade-event">
+                    <div class="${dotClass}"></div>
+                    <div class="te-type ${typeClass}">${o.type}</div>
+                    <div class="te-detail">${o.qty} shares &nbsp;@&nbsp; ${fmt(o.price)}</div>
+                    <div class="te-total ${amtClass}">${sign}${fmt(o.total)}</div>
+                    <div class="te-time">${o.time}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('stockTradeHistory').innerHTML = html;
+        }
+
+        function updateUI() {
+            // Balance
+            document.getElementById("balance").innerText = fmt(balance);
+
+            // Orders table
+            let totalInvested = 0, totalSold = 0;
+            let rows = orders.map((o, i) => {
+                if (o.type === 'BUY') totalInvested += o.total;
+                else totalSold += o.total;
+                let badge = o.type === 'BUY' ? `<span class="badge-buy">BUY</span>` : `<span class="badge-sell">SELL</span>`;
+                let amtClass = o.type === 'BUY' ? 'debit' : 'credit';
+                let sign = o.type === 'BUY' ? '-' : '+';
+                return `<tr>
+                    <td>#${orders.length - i}</td>
+                    <td style="color:#94a3b8;font-size:0.8rem">${o.time}</td>
+                    <td>${badge}</td>
+                    <td><b>${o.symbol.replace('.NS', '')}</b></td>
+                    <td>${o.qty}</td>
+                    <td>${fmt(o.price)}</td>
+                    <td class="${amtClass}">${sign}${fmt(o.total)}</td>
+                    <td>${fmt(o.balanceAfter)}</td>
+                </tr>`;
+            }).join('');
+            document.getElementById("orderList").innerHTML = rows || '<tr><td colspan="8" style="color:#94a3b8;text-align:center;padding:20px">No orders yet</td></tr>';
+            document.getElementById("totalOrders").innerText = orders.length;
+            document.getElementById("totalInvested").innerText = fmt(totalInvested);
+            document.getElementById("totalSold").innerText = fmt(totalSold);
+
+            // Portfolio
+            let portHTML = '';
+            for (let sym in portfolio) {
+                const p = portfolio[sym];
+                const liveP = currentStock === sym ? currentPrice : p.avgPrice;
+                const unrealized = (liveP - p.avgPrice) * p.qty;
+                const unrPct = ((liveP - p.avgPrice) / p.avgPrice * 100).toFixed(2);
+                const isPos = unrealized >= 0;
+                portHTML += `<div class="port-card">
+                    <div><div class="symbol">${sym.replace('.NS', '')}</div><div class="qty">${p.qty} shares @ avg ${fmt(p.avgPrice)}</div></div>
+                    <div style="text-align:center">
+                        <div style="color:#94a3b8;font-size:0.75rem">Invested</div>
+                        <div style="font-weight:600">${fmt(p.avgPrice * p.qty)}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="color:#94a3b8;font-size:0.75rem">Unrealized P&L</div>
+                        <div style="font-weight:700;color:${isPos?'#4ade80':'#f87171'}">${isPos?'+':''}${fmt(unrealized)}</div>
+                        <div style="font-size:0.75rem;color:${isPos?'#4ade80':'#f87171'}">${isPos?'+':''}${unrPct}%</div>
+                    </div>
+                </div>`;
+            }
+            document.getElementById("portfolioList").innerHTML = portHTML || '<p style="color:#94a3b8">No holdings yet</p>';
+
+            // Refresh stock history panel too
+            updateStockHistory();
+        }
+
+        function deposit() {
+            let amt = prompt("Enter deposit amount (₹):");
+            if (!amt || isNaN(amt) || parseInt(amt) <= 0) return;
+            balance += parseInt(amt);
+            showToast(`✅ Deposited ${fmt(parseInt(amt))} to your account`, '#16a34a');
+            updateUI();
+        }
+
+        function showSection(id) {
+            ["dashboard", "orders", "portfolio", "profitloss", "aiprediction"].forEach(s => {
+                let el = document.getElementById(s);
+                if (el) el.style.display = "none";
+            });
+            document.getElementById(id).style.display = "block";
+            if (id === 'profitloss')   refreshPnL();
+            if (id === 'aiprediction') refreshAISignals();
+        }
+
+        /* ── PROFIT & LOSS ── */
+        async function refreshPnL() {
+            const syms = Object.keys(portfolio);
+
+            // ── Realised P&L: use saved avgBuyPrice per sell trade ──
+            let realisedPnL = 0;
+            const sellTrades = orders.filter(o => o.type === 'SELL');
+            sellTrades.forEach(o => {
+                realisedPnL += o.realizedPnL || 0;
+            });
+
+            // ── Fetch live prices for open positions ──
+            const prices = {};
+            if (syms.length > 0) {
+                await Promise.all(syms.map(async s => {
+                    const d = await loadStock(s);
+                    prices[s] = d.price;
+                }));
+            }
+
+            // ── Unrealised P&L rows ──
+            let totalInvested = 0, totalCurrent = 0;
+            let holdingsHTML = '';
+
+            if (syms.length === 0) {
+                holdingsHTML = '<p style="color:#94a3b8;text-align:center;padding:20px 0;font-size:0.9rem">No open positions.</p>';
+            } else {
+                holdingsHTML += `<div style="font-size:0.8rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">
+                    📂 Open Positions (Unrealised P&L)</div>`;
+                syms.forEach(sym => {
+                    const p   = portfolio[sym];
+                    const cp  = prices[sym] || p.avgPrice;
+                    const invested = p.avgPrice * p.qty;
+                    const current  = cp * p.qty;
+                    const pnl      = current - invested;
+                    const pnlPct   = ((pnl / invested) * 100).toFixed(2);
+                    const isPos    = pnl >= 0;
+                    const barW     = Math.min(Math.abs(parseFloat(pnlPct)) * 3, 100);
+                    totalInvested += invested;
+                    totalCurrent  += current;
+
+                    holdingsHTML += `
+                    <div class="pnl-row">
+                        <div class="pnl-sym">${sym.replace('.NS','')}</div>
+                        <div style="flex:1">
+                            <div class="pnl-detail">
+                                ${p.qty} shares &nbsp;·&nbsp;
+                                Avg Buy: <b style="color:#38bdf8">${fmt(p.avgPrice)}</b> &nbsp;·&nbsp;
+                                Live CMP: <b style="color:#e2e8f0">${fmt(cp)}</b>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                                <div class="pnl-bar" style="flex:1">
+                                    <div class="pnl-bar-fill" style="width:${barW}%;background:${isPos?'#16a34a':'#dc2626'}"></div>
+                                </div>
+                                <span style="font-size:0.75rem;color:${isPos?'#4ade80':'#f87171'};min-width:50px;text-align:right">${isPos?'+':''}${pnlPct}%</span>
+                            </div>
+                            <div style="font-size:0.75rem;color:#64748b;margin-top:3px">
+                                Invested: ${fmt(invested)} &nbsp;·&nbsp; Current Value: ${fmt(current)}
+                            </div>
+                        </div>
+                        <div class="pnl-amount ${isPos?'pnl-pos':'pnl-neg'}" style="font-size:1.1rem">
+                            ${isPos?'+':''}${fmt(pnl)}
+                        </div>
+                    </div>`;
+                });
+            }
+
+            // ── Realised trades table ──
+            let realisedHTML = '';
+            if (sellTrades.length > 0) {
+                realisedHTML += `<div style="font-size:0.8rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin:18px 0 10px">
+                    💰 Realised Trades</div>
+                <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+                    <thead>
+                        <tr style="border-bottom:1px solid #1e293b">
+                            <th style="padding:8px 10px;text-align:left;color:#64748b">Stock</th>
+                            <th style="padding:8px 10px;text-align:left;color:#64748b">Qty</th>
+                            <th style="padding:8px 10px;text-align:left;color:#64748b">Avg Buy</th>
+                            <th style="padding:8px 10px;text-align:left;color:#64748b">Sell Price</th>
+                            <th style="padding:8px 10px;text-align:left;color:#64748b">Realised P&L</th>
+                            <th style="padding:8px 10px;text-align:left;color:#64748b">Return %</th>
+                            <th style="padding:8px 10px;text-align:left;color:#64748b">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                sellTrades.forEach(o => {
+                    const pnl  = o.realizedPnL || 0;
+                    const avg  = o.avgBuyPrice  || o.price;
+                    const pct  = ((o.price - avg) / avg * 100).toFixed(2);
+                    const pos  = pnl >= 0;
+                    realisedHTML += `<tr style="border-bottom:1px solid #0f172a">
+                        <td style="padding:9px 10px;font-weight:700;color:#38bdf8">${o.symbol.replace('.NS','')}</td>
+                        <td style="padding:9px 10px">${o.qty}</td>
+                        <td style="padding:9px 10px;color:#94a3b8">${fmt(avg)}</td>
+                        <td style="padding:9px 10px">${fmt(o.price)}</td>
+                        <td style="padding:9px 10px;font-weight:700;color:${pos?'#4ade80':'#f87171'}">${pos?'+':''}${fmt(pnl)}</td>
+                        <td style="padding:9px 10px;color:${pos?'#4ade80':'#f87171'};font-weight:600">${pos?'+':''}${pct}%</td>
+                        <td style="padding:9px 10px;color:#475569;font-size:0.78rem">${o.time}</td>
+                    </tr>`;
+                });
+                realisedHTML += `</tbody></table></div>`;
+            } else {
+                realisedHTML = '<p style="color:#475569;font-size:0.85rem;margin-top:14px">No completed sell trades yet.</p>';
+            }
+
+            document.getElementById('pnl-holdings').innerHTML = holdingsHTML + realisedHTML;
+
+            // ── Update summary cards ──
+            const unrealisedPnL = totalCurrent - totalInvested;
+            const totalPnL      = unrealisedPnL + realisedPnL;
+            const isTotalPos    = totalPnL >= 0;
+
+            document.getElementById('pnl-invested').innerText = fmt(totalInvested);
+            document.getElementById('pnl-current').innerText  = fmt(totalCurrent);
+
+            const tEl = document.getElementById('pnl-total');
+            tEl.innerText = (isTotalPos ? '+' : '') + fmt(totalPnL);
+            tEl.className = 'pnl-stat-value ' + (isTotalPos ? 'pnl-pos' : 'pnl-neg');
+
+            const rEl = document.getElementById('pnl-realised');
+            rEl.innerText = (realisedPnL >= 0 ? '+' : '') + fmt(realisedPnL);
+            rEl.className = 'pnl-stat-value ' + (realisedPnL >= 0 ? 'pnl-pos' : 'pnl-neg');
+        }
+
+        /* ── AI SIGNALS ── */
+        async function refreshAISignals() {
+            document.getElementById('ai-signals-list').innerHTML = '<p style="color:#94a3b8">Analysing market signals…</p>';
+            const syms = watchlist;
+            const results = await Promise.all(syms.map(async sym => {
+                const d = await loadStock(sym);
+                return { sym, price: d.price, history: d.history };
+            }));
+
+            let html = '';
+            results.forEach(({ sym, price, history }) => {
+                const clean = history.filter(v => v != null && !isNaN(v));
+                if (clean.length < 5) return;
+
+                // Trend: compare last price vs first price
+                const first = clean[0], last = clean[clean.length - 1];
+                const trendPct = ((last - first) / first * 100).toFixed(2);
+                const isBull = last > first;
+
+                // RSI-like momentum (simplified)
+                const wins = [], losses = [];
+                for (let i = 1; i < clean.length; i++) {
+                    const d = clean[i] - clean[i - 1];
+                    if (d > 0) wins.push(d); else losses.push(Math.abs(d));
+                }
+                const avgG = wins.reduce((a, b) => a + b, 0) / (wins.length || 1);
+                const avgL = losses.reduce((a, b) => a + b, 0) / (losses.length || 1);
+                const rs   = avgL === 0 ? 100 : avgG / avgL;
+                const rsi  = parseFloat((100 - 100 / (1 + rs)).toFixed(1));
+
+                // MA crossover
+                const shortMA = clean.slice(-5).reduce((a, b) => a + b, 0) / 5;
+                const longMA  = clean.slice(-20).reduce((a, b) => a + b, 0) / Math.min(20, clean.length);
+                const maSignal = shortMA > longMA ? 'Bullish crossover' : 'Bearish crossover';
+
+                // Final signal
+                let signal, tagClass, icon;
+                if (rsi > 70)       { signal = 'OVERBOUGHT — Consider SELL'; tagClass = 'ai-tag-sell'; icon = '📉'; }
+                else if (rsi < 30)  { signal = 'OVERSOLD — Consider BUY';    tagClass = 'ai-tag-buy';  icon = '📈'; }
+                else if (isBull)    { signal = 'UPTREND — Consider BUY';     tagClass = 'ai-tag-buy';  icon = '🚀'; }
+                else                { signal = 'DOWNTREND — Consider SELL';  tagClass = 'ai-tag-sell'; icon = '⚠️'; }
+
+                // Confidence = abs(rsi - 50) mapped to 40–95%
+                const confidence = Math.min(95, Math.max(40, Math.round(40 + Math.abs(rsi - 50) * 1.1)));
+
+                html += `
+                <div class="ai-card">
+                    <div class="ai-card-icon">${icon}</div>
+                    <div style="flex:1">
+                        <div class="ai-card-sym">${sym.replace('.NS', '')} <span style="color:#475569;font-size:0.8rem;font-weight:400">— ${fmt(price)}</span></div>
+                        <div class="ai-card-signal"><span class="ai-tag ${tagClass}">${signal}</span></div>
+                        <div class="ai-card-detail">
+                            RSI: <b style="color:${rsi > 70 ? '#f87171' : rsi < 30 ? '#4ade80' : '#94a3b8'}">${rsi}</b>
+                            &nbsp;·&nbsp; Trend: <b style="color:${isBull ? '#4ade80' : '#f87171'}">${trendPct > 0 ? '+' : ''}${trendPct}%</b>
+                            &nbsp;·&nbsp; MA: <b style="color:#a78bfa">${maSignal}</b>
+                        </div>
+                        <div class="ai-confidence">
+                            <span style="font-size:0.75rem;color:#64748b">Confidence</span>
+                            <div class="ai-confidence-bar"><div class="ai-confidence-fill" style="width:${confidence}%"></div></div>
+                            <span class="ai-confidence-label">${confidence}%</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById('ai-signals-list').innerHTML = html || '<p style="color:#94a3b8">No signals available.</p>';
+        }
+
+        /* INIT */
+        loadWatchlist();
+        loadChart(currentStock);
+        loadTV(currentStock);
+        updateUI();
+
+        /* ── STOCK GURU PREDICTION MODAL ── */
+        const SGP_URL = 'http://localhost:5001/';
+
+        function openSGPModal() {
+            const modal = document.getElementById('sgp-modal');
+            modal.classList.add('open');
+            checkSGPBackend();
+        }
+
+        function closeSGPModal() {
+            document.getElementById('sgp-modal').classList.remove('open');
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSGPModal();
+        });
+
+        async function checkSGPBackend() {
+            const dot  = document.getElementById('sgp-status-dot');
+            const text = document.getElementById('sgp-status-text');
+            const offlineMsg = document.getElementById('sgp-offline-msg');
+            const iframe     = document.getElementById('sgp-iframe');
+
+            text.textContent = 'Connecting…';
+            dot.classList.remove('online');
+
+            try {
+                const res = await fetch('http://localhost:5001/api/health', {
+                    signal: AbortSignal.timeout(4000)
+                });
+                if (res.ok) {
+                    dot.classList.add('online');
+                    text.textContent = '✅ Backend Online — AI Prediction Ready';
+                    offlineMsg.classList.remove('show');
+                    // Load app from Flask server (serves prediction.html + API)
+                    if (!iframe.src || iframe.src === 'about:blank' || iframe.src === window.location.href) {
+                        iframe.src = SGP_URL;
+                    }
+                    iframe.style.display = 'block';
+                    return;
+                }
+            } catch (_) {}
+
+            // Backend offline
+            dot.classList.remove('online');
+            text.textContent = '❌ Backend Offline — Start the Python server';
+            offlineMsg.classList.add('show');
+            iframe.style.display = 'none';
+        }
+
+        // Auto-check backend every 10s when modal is open
+        setInterval(() => {
+            if (document.getElementById('sgp-modal').classList.contains('open')) {
+                checkSGPBackend();
+            }
+        }, 10000);
+
+    </script>
+    <div id="toast"></div>
+
+<!-- 🤖 AI Chatbot Floating Widget -->
+<script src="chatbot-widget.js"></script>
+
+</body>
+
+</html>

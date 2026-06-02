@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technical Analysis Learning Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .tab-button.active {
+     @apply bg-blue-600 text-white;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-blue-700 text-white py-6 shadow-md">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-4xl font-bold">Technical Analysis Learning Hub</h1>
+      <p class="mt-2 text-lg max-w-xl mx-auto">Master chart patterns, indicators, and trading techniques</p>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="bg-white shadow sticky top-0 z-20">
+    <div class="container mx-auto px-4 flex justify-center space-x-4 py-3">
+      <button class="tab-button px-4 py-2 font-semibold rounded hover:bg-blue-100" data-tab="patterns">Chart Patterns</button>
+      <button class="tab-button px-4 py-2 font-semibold rounded hover:bg-blue-100" data-tab="indicators">Indicators</button>
+      <button class="tab-button px-4 py-2 font-semibold rounded hover:bg-blue-100" data-tab="techniques">Techniques</button>
+      <button class="tab-button px-4 py-2 font-semibold rounded hover:bg-blue-100" data-tab="resources">Resources</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8 flex-grow">
+
+    <!-- Chart Patterns -->
+    <section id="patterns" class="tab-content">
+      <h2 class="text-3xl font-bold mb-6 text-center">Chart Patterns</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+
+        <!-- Head and Shoulders -->
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-xl font-semibold mb-3">Head and Shoulders</h3>
+          <canvas id="headShouldersChart" class="mb-4"></canvas>
+          <p>A reversal pattern signaling a trend change. It has three peaks: two shoulders and a higher head in the middle.</p>
+          <span class="inline-block mt-3 px-3 py-1 bg-red-500 text-white rounded-full text-sm">Bearish Reversal</span>
+        </article>
+
+        <!-- Double Top -->
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-xl font-semibold mb-3">Double Top</h3>
+          <canvas id="doubleTopChart" class="mb-4"></canvas>
+          <p>Bearish reversal pattern shaped like an "M". Indicates resistance at a price level after two peaks.</p>
+          <span class="inline-block mt-3 px-3 py-1 bg-red-500 text-white rounded-full text-sm">Bearish Reversal</span>
+        </article>
+
+        <!-- Cup and Handle -->
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-xl font-semibold mb-3">Cup and Handle</h3>
+          <canvas id="cupHandleChart" class="mb-4"></canvas>
+          <p>Bullish continuation pattern resembling a tea cup. The handle is a small consolidation before breakout.</p>
+          <span class="inline-block mt-3 px-3 py-1 bg-green-600 text-white rounded-full text-sm">Bullish Continuation</span>
+        </article>
+        <!-- Ascending Triangle -->
+        <article class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-3">Ascending Triangle</h3>
+        <canvas id="ascendingTriangleChart" class="mb-4"></canvas>
+        <p>A bullish continuation pattern with a flat resistance line and rising support line.</p>
+        <span class="inline-block mt-3 px-3 py-1 bg-green-600 text-white rounded-full text-sm">Bullish Continuation</span>
+        </article>
+
+<!-- Descending Triangle -->
+<article class="bg-white p-6 rounded-lg shadow">
+  <h3 class="text-xl font-semibold mb-3">Descending Triangle</h3>
+  <canvas id="descendingTriangleChart" class="mb-4"></canvas>
+  <p>A bearish continuation pattern with a flat support line and descending resistance line.</p>
+  <span class="inline-block mt-3 px-3 py-1 bg-red-500 text-white rounded-full text-sm">Bearish Continuation</span>
+</article>
+
+<!-- Bullish Flag -->
+<article class="bg-white p-6 rounded-lg shadow">
+  <h3 class="text-xl font-semibold mb-3">Bullish Flag</h3>
+  <canvas id="bullishFlagChart" class="mb-4"></canvas>
+  <p>A short consolidation pattern after a strong upward move, signaling continuation.</p>
+  <span class="inline-block mt-3 px-3 py-1 bg-green-600 text-white rounded-full text-sm">Bullish Continuation</span>
+</article>
+
+<!-- Bearish Flag -->
+<article class="bg-white p-6 rounded-lg shadow">
+  <h3 class="text-xl font-semibold mb-3">Bearish Flag</h3>
+  <canvas id="bearishFlagChart" class="mb-4"></canvas>
+  <p>A short consolidation pattern after a strong downward move, signaling continuation.</p>
+  <span class="inline-block mt-3 px-3 py-1 bg-red-500 text-white rounded-full text-sm">Bearish Continuation</span>
+</article>
+
+    </div>
+    </section>
+
+    <!-- Indicators -->
+    <section id="indicators" class="tab-content">
+      <h2 class="text-3xl font-bold mb-6 text-center">Technical Indicators</h2>
+
+      <div class="max-w-3xl mx-auto space-y-8">
+
+        <!-- RSI -->
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-semibold mb-4">Relative Strength Index (RSI)</h3>
+          <canvas id="rsiChart" class="mb-4"></canvas>
+          <p>Momentum oscillator measuring speed and change of price movements. Values range from 0 to 100.</p>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li>Above 70: Overbought (possible sell signal)</li>
+            <li>Below 30: Oversold (possible buy signal)</li>
+            <li>Divergence may indicate trend reversal</li>
+          </ul>
+        </article>
+
+        <!-- Moving Averages -->
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-semibold mb-4">Moving Averages (MA)</h3>
+          <p>Average price over a specific period. Common types: Simple MA (SMA) and Exponential MA (EMA).</p>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li>MA20 and MA50 are popular short and medium-term averages</li>
+            <li>Crossovers can signal trend changes</li>
+          </ul>
+        </article>
+
+        <!-- MACD -->
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-semibold mb-4">MACD (Moving Average Convergence Divergence)</h3>
+          <p>Trend-following momentum indicator showing relationship between two moving averages.</p>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li>MACD line crossing signal line indicates buy/sell signals</li>
+            <li>Divergence with price can signal reversals</li>
+          </ul>
+        </article>
+<article class="bg-white p-6 rounded-lg shadow mb-6">
+  <h3 class="text-2xl font-semibold mb-3">Stochastic Oscillator</h3>
+  <p>A momentum indicator comparing closing price to recent price range, useful for identifying overbought and oversold levels.</p>
+</article>
+
+<article class="bg-white p-6 rounded-lg shadow mb-6">
+  <h3 class="text-2xl font-semibold mb-3">Average True Range (ATR)</h3>
+  <p>Measures market volatility by calculating the average range between high and low prices over a period.</p>
+</article>
+
+<article class="bg-white p-6 rounded-lg shadow mb-6">
+  <h3 class="text-2xl font-semibold mb-3">On-Balance Volume (OBV)</h3>
+  <p>Uses volume flow to predict price changes by adding volume on up days and subtracting on down days.</p>
+</article>
+
+<article class="bg-white p-6 rounded-lg shadow mb-6">
+  <h3 class="text-2xl font-semibold mb-3">Parabolic SAR</h3>
+  <p>Indicates potential price reversals by plotting dots above or below price bars.</p>
+</article>
+
+<article class="bg-white p-6 rounded-lg shadow mb-6">
+  <h3 class="text-2xl font-semibold mb-3">Fibonacci Retracement</h3>
+  <p>Identifies potential support and resistance levels based on Fibonacci ratios (23.6%, 38.2%, 50%, 61.8%).</p>
+</article>
+
+      </div>
+    </section>
+
+    <!-- Techniques -->
+    <section id="techniques" class="tab-content">
+      <h2 class="text-3xl font-bold mb-6 text-center">Trading Techniques</h2>
+      <div class="max-w-4xl mx-auto space-y-8">
+
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-semibold mb-3">Support and Resistance</h3>
+          <p>Price levels where buying or selling pressure tends to pause or reverse the price direction.</p>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li><strong>Support:</strong> Price floor where demand increases</li>
+            <li><strong>Resistance:</strong> Price ceiling where supply increases</li>
+            <li>Breakouts above resistance or below support can signal strong moves</li>
+          </ul>
+        </article>
+
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-semibold mb-3">Trend Analysis</h3>
+          <p>Identifying the general direction of price movement to align trades with the trend.</p>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li>Uptrend: Higher highs and higher lows</li>
+            <li>Downtrend: Lower highs and lower lows</li>
+            <li>Sideways: Range-bound price action</li>
+          </ul>
+        </article>
+
+        <article class="bg-white p-6 rounded-lg shadow">
+          <h3 class="text-2xl font-semibold mb-3">Volume Analysis</h3>
+          <p>Volume confirms price moves. Rising volume with price increase signals strength.</p>
+          <ul class="list-disc list-inside mt-2 text-gray-700">
+            <li>Volume spikes often precede big price moves</li>
+            <li>Divergence between volume and price can warn of reversals</li>
+          </ul>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Resources -->
+    <section id="resources" class="tab-content">
+      <h2 class="text-3xl font-bold mb-6 text-center">Learning Resources</h2>
+      <div class="max-w-3xl mx-auto space-y-6 bg-white p-6 rounded-lg shadow">
+
+        <h3 class="text-xl font-semibold">Books</h3>
+        <ul class="list-disc list-inside text-gray-700 space-y-2">
+          <li><strong>Technical Analysis of the Financial Markets</strong> by John J. Murphy</li>
+          <li><strong>Encyclopedia of Chart Patterns</strong> by Thomas N. Bulkowski</li>
+          <li><strong>Japanese Candlestick Charting Techniques</strong> by Steve Nison</li>
+        </ul>
+
+        <h3 class="text-xl font-semibold mt-6">Websites</h3>
+        <ul class="list-disc list-inside text-blue-700 space-y-2">
+          <li><a href="https://www.investopedia.com/terms/t/technicalanalysis.asp" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-900">Investopedia - Technical Analysis</a></li>
+          <li><a href="https://www.babypips.com/learn/forex/technical-analysis" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-900">BabyPips - Technical Analysis Guide</a></li>
+          <li><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-900">TradingView - Charting Platform</a></li>
+          <li><a href="https://stockcharts.com/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-900">StockCharts - Charting & Analysis Tools</a></li>
+          <li><a href="https://www.thepatternsite.com/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-900">The Pattern Site - Chart Patterns</a></li>
+        </ul>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-blue-700 text-white py-6 text-center">
+    <p>© 2023 Technical Analysis Learning Hub. For educational purposes only. Not financial advice.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // Tab switching logic
+    const tabs = document.querySelectorAll('.tab-button');
+    const contents = document.querySelectorAll('.tab-content');
+
+    function activateTab(tabName) {
+      contents.forEach(c => {
+        c.classList.toggle('active', c.id === tabName);
+      });
+      tabs.forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tabName);
+      });
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        activateTab(tab.dataset.tab);
+      });
+    });
+
+    // Activate first tab by default
+    activateTab('patterns');
+
+    // Chart.js charts
+      
+
+    // Head and Shoulders Chart
+    const hsCtx = document.getElementById('headShouldersChart').getContext('2d');
+    new Chart(hsCtx, {
+      type: 'line',
+      data: {
+        labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'],
+        datasets: [{
+          label: 'Price',
+          data: [50,55,60,65,70,75,80,75,70,65,70,75,70,65,60],
+          borderColor: '#ef4444',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { display: false } }
+      }
+    });
+
+    // Double Top Chart
+    const dtCtx = document.getElementById('doubleTopChart').getContext('2d');
+    new Chart(dtCtx, {
+      type: 'line',
+      data: {
+        labels: ['1','2','3','4','5','6','7','8','9','10'],
+        datasets: [{
+          label: 'Price',
+          data: [50,60,70,80,75,80,75,70,65,60],
+          borderColor: '#ef4444',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { display: false } }
+      }
+    });
+
+    // Cup and Handle Chart
+    const chCtx = document.getElementById('cupHandleChart').getContext('2d');
+    new Chart(chCtx, {
+      type: 'line',
+      data: {
+        labels: ['1','2','3','4','5','6','7','8','9','10','11','12'],
+        datasets: [{
+          label: 'Price',
+          data: [60,65,70,75,70,65,60,65,70,75,70,75],
+          borderColor: '#10b981',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { display: false } }
+      }
+    });
+
+    // RSI Chart
+    const rsiCtx = document.getElementById('rsiChart').getContext('2d');
+    new Chart(rsiCtx, {
+      type: 'line',
+      data: {
+        labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'],
+        datasets: [{
+          label: 'RSI',
+          data: [45,50,55,60,65,70,75,80,75,70,65,60,55,50,45],
+          borderColor: '#f59e0b',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { min: 0, max: 100, ticks: { stepSize: 20 }, grid: { color: '#e5e7eb' } },
+          x: { display: false }
+        }
+      }
+    });
+    // Ascending Triangle Chart
+const ascendingTriangleCtx = document.getElementById('ascendingTriangleChart').getContext('2d');
+new Chart(ascendingTriangleCtx, {
+  type: 'line',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10'],
+    datasets: [{
+      label: 'Price',
+      data: [50,52,54,55,56,57,57,57,57,58],
+      borderColor: '#10b981',
+      fill: false,
+      tension: 0.2,
+      pointRadius: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } }
+  }
+});
+
+// Descending Triangle Chart
+const descendingTriangleCtx = document.getElementById('descendingTriangleChart').getContext('2d');
+new Chart(descendingTriangleCtx, {
+  type: 'line',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10'],
+    datasets: [{
+      label: 'Price',
+      data: [60,59,58,57,56,55,55,55,55,54],
+      borderColor: '#ef4444',
+      fill: false,
+      tension: 0.2,
+      pointRadius: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } }
+  }
+});
+
+// Bullish Flag Chart
+const bullishFlagCtx = document.getElementById('bullishFlagChart').getContext('2d');
+new Chart(bullishFlagCtx, {
+  type: 'line',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10','11','12'],
+    datasets: [{
+      label: 'Price',
+      data: [50,55,60,65,63,62,61,62,63,65,67,70],
+      borderColor: '#10b981',
+      fill: false,
+      tension: 0.3,
+      pointRadius: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } }
+  }
+});
+
+// Bearish Flag Chart
+const bearishFlagCtx = document.getElementById('bearishFlagChart').getContext('2d');
+new Chart(bearishFlagCtx, {
+  type: 'line',
+  data: {
+    labels: ['1','2','3','4','5','6','7','8','9','10','11','12'],
+    datasets: [{
+      label: 'Price',
+      data: [70,65,60,55,57,58,59,58,57,55,53,50],
+      borderColor: '#ef4444',
+      fill: false,
+      tension: 0.3,
+      pointRadius: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } }
+  }
+});
+
+  </script>
+
+<!-- 🤖 AI Chatbot Floating Widget -->
+<script src="chatbot-widget.js"></script>
+
+</body>
+</html>

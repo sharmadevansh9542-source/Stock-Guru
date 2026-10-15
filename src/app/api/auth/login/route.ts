@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "stockguru_super_secret_jwt_key_202
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, expectedRole } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -19,8 +19,8 @@ export async function POST(req: Request) {
     try {
       // Query user in PostgreSQL
       const result = await query(
-        "SELECT id, username, email, password_hash, virtual_balance FROM users WHERE email = $1",
-        [email.toLowerCase()]
+        "SELECT id, username, email, password_hash, role, virtual_balance FROM users WHERE email = $1",
+        [email.toLowerCase().trim()]
       );
 
       if (result.rows.length === 0) {
@@ -35,47 +35,48 @@ export async function POST(req: Request) {
 
       if (!valid) {
         return NextResponse.json(
-          { message: "Invalid password" },
+          { message: "Invalid email or password" },
           { status: 401 }
         );
       }
 
+      const userRole = user.role || "user";
+
+      // If user specifically attempted to login through the Admin Portal but is not an admin:
+      if (expectedRole === "admin" && userRole !== "admin") {
+        return NextResponse.json(
+          { message: "Access Denied: This account does not have Administrator privileges." },
+          { status: 403 }
+        );
+      }
+
       const token = jwt.sign(
-        { userId: user.id, email: user.email, username: user.username },
+        { userId: user.id, email: user.email, username: user.username, role: userRole },
         JWT_SECRET,
         { expiresIn: "7d" }
       );
 
+      const redirectUrl = userRole === "admin" ? "/admin" : "/";
+
       return NextResponse.json({
-        message: "Login successful",
+        message: userRole === "admin" ? "Admin login successful!" : "Login successful!",
         token,
+        redirectTo: redirectUrl,
         user: {
           id: user.id,
           username: user.username,
           email: user.email,
-          balance: parseFloat(user.virtual_balance),
+          role: userRole,
+          balance: parseFloat(user.virtual_balance || 100000),
         },
       });
     } catch (dbErr: any) {
-      console.warn("PostgreSQL not active, falling back to instant session mode:", dbErr.message);
+      console.warn("PostgreSQL login issue:", dbErr.message);
 
-      // Graceful fallback if PostgreSQL service is paused in local machine
-      const token = jwt.sign(
-        { userId: 1, email, username: email.split("@")[0] },
-        JWT_SECRET,
-        { expiresIn: "7d" }
+      return NextResponse.json(
+        { message: "Database connection failed. Please ensure PostgreSQL is running." },
+        { status: 500 }
       );
-
-      return NextResponse.json({
-        message: "Login successful (Demo mode)",
-        token,
-        user: {
-          id: 1,
-          username: email.split("@")[0],
-          email,
-          balance: 100000,
-        },
-      });
     }
   } catch (error: any) {
     return NextResponse.json(

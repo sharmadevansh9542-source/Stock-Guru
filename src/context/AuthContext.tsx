@@ -3,11 +3,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface User {
-  id?: string;
+export interface User {
+  id?: string | number;
   username: string;
   email?: string;
   avatar?: string;
+  role?: "user" | "admin";
+  balance?: number;
 }
 
 interface AuthContextType {
@@ -45,8 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setToken(savedToken);
 
-    // Verify token with backend
-    fetch("http://localhost:5000/profile", {
+    // Verify token with Next.js PostgreSQL backend
+    fetch("/api/auth/profile", {
       headers: {
         Authorization: `Bearer ${savedToken}`,
       },

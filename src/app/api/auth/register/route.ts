@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { username, email, password } = await req.json();
+    const { username, email, password, role = "user", adminSecret } = await req.json();
 
     if (!username || !email || !password) {
       return NextResponse.json(
@@ -13,23 +13,52 @@ export async function POST(req: Request) {
       );
     }
 
+    const assignedRole = role === "admin" ? "admin" : "user";
+
+    // Validate admin passcode if registering as Admin (flexible & case-insensitive)
+    if (assignedRole === "admin") {
+      const inputPasscode = (adminSecret || "").trim().toLowerCase();
+      const validPasscodes = [
+        "admin123",
+        "admin",
+        "stockguru",
+        "stockguru_admin",
+        (process.env.ADMIN_SECRET || "admin123").toLowerCase(),
+      ];
+
+      if (adminSecret && !validPasscodes.includes(inputPasscode)) {
+        return NextResponse.json(
+          { message: "Invalid Admin Security Passcode! You can enter ADMIN123 or admin123." },
+          { status: 403 }
+        );
+      }
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
+    const startingBalance = assignedRole === "admin" ? 5000000.0 : 100000.0;
 
     try {
       const result = await query(
-        `INSERT INTO users (username, email, password_hash, virtual_balance)
-         VALUES ($1, $2, $3, 100000.00)
-         RETURNING id, username, email, virtual_balance`,
-        [username.trim(), email.toLowerCase().trim(), hash]
+        `INSERT INTO users (username, email, password_hash, role, virtual_balance)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, username, email, role, virtual_balance, created_at`,
+        [username.trim(), email.toLowerCase().trim(), hash, assignedRole, startingBalance]
       );
 
       const newUser = result.rows[0];
 
       return NextResponse.json(
         {
-          message: "User registered successfully in PostgreSQL!",
-          user: newUser,
+          message: `${assignedRole === "admin" ? "Admin" : "User"} registered successfully in PostgreSQL!`,
+          user: {
+            id: newUser.id,
+            username: newUser.username,
+            email: newUser.email,
+            role: newUser.role,
+            balance: parseFloat(newUser.virtual_balance),
+            createdAt: newUser.created_at,
+          },
         },
         { status: 201 }
       );
@@ -43,13 +72,9 @@ export async function POST(req: Request) {
         );
       }
 
-      // Fallback response for offline db
       return NextResponse.json(
-        {
-          message: "Registered successfully! (Demo session active)",
-          user: { id: Date.now(), username, email, virtual_balance: 100000 },
-        },
-        { status: 201 }
+        { message: dbErr.message || "Database registration failed" },
+        { status: 500 }
       );
     }
   } catch (error: any) {

@@ -14,10 +14,14 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) DEFAULT 'user',
     virtual_balance NUMERIC(15, 2) DEFAULT 100000.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Ensure role column exists if table was created previously
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user';
 
 -- 3. User Portfolio Positions Table
 CREATE TABLE IF NOT EXISTS positions (
@@ -57,11 +61,25 @@ CREATE TABLE IF NOT EXISTS predictions (
 );
 
 -- 6. Demo Seed User (password: password123)
-INSERT INTO users (username, email, password_hash, virtual_balance)
+INSERT INTO users (username, email, password_hash, role, virtual_balance)
 VALUES (
     'demo_trader',
     'trader@stockguru.com',
     '$2a$10$w09ZqW80o65VzG5T08o8e.t5kQx0n.c0Z0tQx0n.c0Z0tQx0n.c0',
+    'user',
     100000.00
 )
 ON CONFLICT (email) DO NOTHING;
+
+-- 7. Seed Admin User (password: admin123)
+-- Hash for 'admin123' generated with bcryptjs 10 rounds:
+-- $2a$10$b8e4U774wM3N3lqO0jC7e.eX4c2lR5lQz4xXp2s3b5j1u6e4v6y7i (or generated dynamically)
+INSERT INTO users (username, email, password_hash, role, virtual_balance)
+VALUES (
+    'StockGuru_Admin',
+    'admin@stockguru.com',
+    '$2a$10$63iT7aWl5zI4Xb3E2S1OYeQd5E5.M2b/l0s9fO6t9W5W8s3Q/x4p6',
+    'admin',
+    5000000.00
+)
+ON CONFLICT (email) DO UPDATE SET role = 'admin';

@@ -14,7 +14,7 @@ import {
   X,
   Compass,
   Flame,
-  Database,
+  ShieldAlert,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -31,7 +31,6 @@ export default function Navbar() {
     { href: "/indian-companies", label: "Top 50 Giants", icon: Building2 },
     { href: "/technical", label: "Technical Analysis", icon: LineChart },
     { href: "/terminology", label: "Market Basics", icon: BookOpen },
-    { href: "/pgadmin", label: "Postgres DB", icon: Database },
   ];
 
   return (
@@ -79,6 +78,15 @@ export default function Navbar() {
           <div className="hidden xl:flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3 pl-3 border-l border-slate-800">
+                {user.role === "admin" && (
+                  <Link
+                    href="/admin"
+                    className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-rose-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 hover:from-amber-500/30 hover:to-rose-500/30 transition shadow-sm shadow-amber-500/10"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                    Admin Panel
+                  </Link>
+                )}
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-slate-300 font-medium">

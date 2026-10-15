@@ -40,8 +40,8 @@ export default function ChatbotWidget() {
     setLoading(true);
 
     try {
-      // Connect to chatbot-backend (port 5001 or 5000 or custom)
-      const res = await fetch("http://localhost:5001/api/chat", {
+      // Connect to native Next.js API route (/api/chat)
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userText }),

@@ -1,47 +1,147 @@
-# ── Python Virtual Environments (very large, don't push) ──
-tfenv/
-tfenv310/
-venv/
-env/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-dist/
-build/
-.eggs/
+# ===================================
+# StockGuru — Comprehensive .gitignore
+# Covers: Next.js, Node.js, Python, PostgreSQL, IDE
+# ===================================
 
-# ── Node Modules (rebuild on server) ──
+# ───────────────────────────────
+# Next.js
+# ───────────────────────────────
+.next/
+out/
+build/
+dist/
+.turbo/
+
+# ───────────────────────────────
+# Node.js & npm
+# ───────────────────────────────
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnp/
+.pnp.js
+.yarn/install-state.gz
+package-lock.json
 
-# ── Environment Variables (SECRET - NEVER commit) ──
+# ───────────────────────────────
+# Environment & Secrets (NEVER commit these)
+# ───────────────────────────────
 .env
 .env.local
-.env.production
 .env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.example
 
-# ── Build Outputs ──
-/dist
-/build
-chatbot-frontend/dist/
+# ───────────────────────────────
+# Python & Virtual Environments
+# ───────────────────────────────
+venv/
+tfenv/
+tfenv310/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+.ipynb_checkpoints/
+*.ipynb
 
-# ── IDE / OS files ──
-.idea/
-.vscode/settings.json
+# ───────────────────────────────
+# Machine Learning / AI Models
+# ───────────────────────────────
+*.h5
+*.keras
+*.pkl
+*.pth
+*.onnx
+*.tflite
+
+# ───────────────────────────────
+# CSV / Dataset Files
+# ───────────────────────────────
+*.csv
+*.json.bak
+
+# ───────────────────────────────
+# Database
+# ───────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.bak
+pgdata/
+
+# ───────────────────────────────
+# Logs
+# ───────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+*.log.gz
+
+# ───────────────────────────────
+# OS Files
+# ───────────────────────────────
 .DS_Store
 Thumbs.db
-*.log
+Desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+.Trash-*/
 
-# ── Data cache (regenerated at runtime) ──
-prediction-backend/data/*.csv
+# ───────────────────────────────
+# IDE & Editor
+# ───────────────────────────────
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*.swo
+*.sublime-workspace
+.editorconfig
 
-# ── Other ──
+# ───────────────────────────────
+# Legacy / Backup Files
+# ───────────────────────────────
+legacy_backup/
 my/
-apps/
-*.sqlite
-*.db
+*.html.bak
+*.bak
+
+# ───────────────────────────────
+# TypeScript
+# ───────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ───────────────────────────────
+# Vercel / Deployment
+# ───────────────────────────────
+.vercel/
+.netlify/
+
+# ───────────────────────────────
+# Testing
+# ───────────────────────────────
+coverage/
+.nyc_output/
+test-results/

@@ -1568,25 +1568,14 @@
                 datasets = [{ label: "Volume", data: h.map(x => x.volume), backgroundColor: "rgba(41,121,255,.35)", borderColor: "rgba(41,121,255,.6)", borderWidth: 0 }];
             }
 
-            // Use category axis for ALL tabs — avoids chartjs-adapter-date-fns CDN dependency
-            const maxTicks = 12;
-            const step = Math.max(1, Math.floor(labels.length / maxTicks));
-            const xCfg = {
-                type: "category",
-                ticks: {
-                    color: "#546e7a",
-                    font: { size: 9 },
-                    maxRotation: 30,
-                    callback: (val, idx) => idx % step === 0 ? labels[idx] : null
-                },
-                grid: { color: "#0c1120" }
-            };
+            const xCfg = (tab === "vol")
+                ? { type: "category", ticks: { color: "#546e7a", font: { size: 9 } }, grid: { color: "#0c1120" } }
+                : { type: "time", time: { unit: "month" }, ticks: { color: "#546e7a", font: { size: 9 } }, grid: { color: "#0c1120" } };
 
             hChart = new Chart($("histChart").getContext("2d"), {
                 type, data: { labels, datasets },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    animation: { duration: 400 },
                     interaction: { mode: "index", intersect: false },
                     plugins: {
                         legend: { labels: { color: "#546e7a", font: { family: "Space Mono", size: 10 } } },
